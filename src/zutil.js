@@ -1,4 +1,4 @@
-// Here we will define zester util functions.
+// Here we will define zeq util functions.
 
 var util = require('util')
 var _ = require('lodash')

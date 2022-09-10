@@ -1,5 +1,6 @@
-# zester
-Functional testing tool
+# zeq
+
+A JavaScript library to help sequencing commands and event waiting.
 
 Developed using node v8.11.2.
 
