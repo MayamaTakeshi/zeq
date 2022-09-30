@@ -1,4 +1,4 @@
-var Zester = require('../src/index.js')
+var Zeq = require('../src/index.js')
 var m = require('data-matching')
 const assert = require('assert')
 
@@ -38,7 +38,7 @@ async function subfunc3(z) {
 }
 
 async function test() {
-    const z = new Zester()
+    const z = new Zeq()
     z.trap_events(em, 'my_emitter')
 
     await subfunc1(z)

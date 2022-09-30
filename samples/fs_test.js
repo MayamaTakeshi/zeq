@@ -1,10 +1,10 @@
-var Zester = require('../src/index.js')
+var Zeq = require('../src/index.js')
 var m = require('data-matching')
 const assert = require('assert')
 
 fs = require('fs')
 
-const z = new Zester()
+const z = new Zeq()
 
 async function test() {
     for(var i=0; i<10; ++i) {

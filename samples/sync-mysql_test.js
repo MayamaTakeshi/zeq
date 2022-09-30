@@ -1,10 +1,10 @@
-var Zester = require('../src/index.js')
+var Zeq = require('../src/index.js')
 var m = require('data-matching')
 const assert = require('assert')
 var events = require('events')
 var MySql = require('sync-mysql')
 
-var z = new Zester()
+var z = new Zeq()
 
 async function test() {
     class MyEmitter extends events {}

@@ -1,4 +1,4 @@
-var Zester = require('../src/index.js')
+var Zeq = require('../src/index.js')
 var m = require('data-matching')
 const assert = require('assert')
 
@@ -59,11 +59,11 @@ const test = async (z) => {
 
 async function work() {
     await Promise.all([
-        test(new Zester({id: 'test1'})),
-        test(new Zester({id: 'test2'})),
-        test(new Zester({id: 'test3'})),
-        test(new Zester({id: 'test4'})),
-        test(new Zester({id: 'test5'})),
+        test(new Zeq({id: 'test1'})),
+        test(new Zeq({id: 'test2'})),
+        test(new Zeq({id: 'test3'})),
+        test(new Zeq({id: 'test4'})),
+        test(new Zeq({id: 'test5'})),
     ])
 }
 

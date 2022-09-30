@@ -1,4 +1,4 @@
-var Zester = require('../src/index.js')
+var Zeq = require('../src/index.js')
 var m = require('data-matching')
 const assert = require('assert')
 var moment = require('moment')
@@ -9,7 +9,7 @@ class MyEmitter extends events {}
 
 var em = new MyEmitter()
 
-var z = new Zester({
+var z = new Zeq({
     id: 'mytest',
     log_function: (level, msg) => {
         console.log(`${moment().format("YYYY-MM-DD HH:mm:ss.SSS")} ${level} ${msg}`)
