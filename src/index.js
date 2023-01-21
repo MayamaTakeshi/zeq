@@ -162,7 +162,7 @@ class Zester {
             this.print_white("]")
             clearTimeout(this.timer_id)
             this.timer_id = null
-            this.reject('got_unexptected_event')
+            this.reject('got_unexpected_event')
         }
     }
 
