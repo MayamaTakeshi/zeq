@@ -119,6 +119,7 @@ class Zester {
 
                     this.expected_events.splice(i, 1)
                     matched = true
+                    break
                 }
             } catch(e) {
                 if(e instanceof matching.MatchingError) {

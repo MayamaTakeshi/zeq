@@ -1,6 +1,6 @@
 {
   "name": "@mayama/zeq",
-  "version": "4.1.15",
+  "version": "4.1.16",
   "description": "A JavaScript library to help sequencing commands and event waiting",
   "main": "src/index.js",
   "scripts": {
@@ -15,6 +15,9 @@
   "keywords": [
     "zeq",
     "sequencing",
+    "sequence",
+    "wait",
+    "sleep",
     "event"
   ],
   "bugs": {
