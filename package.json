@@ -1,6 +1,6 @@
 {
   "name": "@mayama/zeq",
-  "version": "4.1.22",
+  "version": "4.1.24",
   "description": "A JavaScript library to help sequencing commands and event waiting",
   "main": "src/index.js",
   "scripts": {},
@@ -34,6 +34,8 @@
     "axios": "^1.4.0",
     "got": "^12.6.0",
     "node-fetch": "^3.3.1",
-    "sync-mysql": "^3.0.1"
+    "sync-mysql": "^3.0.1",
+    "websocket": "^1.0.34",
+    "ws": "^8.13.0"
   }
 }
