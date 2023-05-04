@@ -1,9 +1,10 @@
-// This shows use of fetch with zeq features.
-import fetch from 'node-fetch'
+// This shows use of axios with zeq features.
+import axios from 'axios'
 import https from 'https'
 import Zeq from '../src/index.js'
 import m from 'data-matching'
 import fs from 'fs'
+import assert from 'assert'
 
 const z = new Zeq()
 
@@ -30,15 +31,17 @@ async function test() {
     const httpsAgent = new https.Agent({
         rejectUnauthorized: false,
     })
-    
+
     const url = `https://${server_host}:${server_port}${path}`
 
-    fetch(
-        url,
-        {
-            agent: httpsAgent,
-        }
-    )
+    const config = {
+        httpsAgent,
+    }
+
+    process.env.http_proxy = ''
+    process.env.https_proxy = ''
+
+    axios.get(url, config)
     .then(res => {
         z.push_event({
             event: 'https_res',
@@ -57,7 +60,7 @@ async function test() {
             event: 'https_req',
             req: m.collect('req'),
             res: m.collect('server_res'),
-        }
+        },
     ], 1000)
 
     console.log("request arrived")
@@ -71,8 +74,8 @@ async function test() {
         },
     ], 1000)
 
-    const data = await z.store.client_res.json()
-    console.log(data)
+    assert(z.store.client_res.status == 200)
+    assert(z.store.client_res.data.status == 0)
 
     console.log("success")
     process.exit(0)

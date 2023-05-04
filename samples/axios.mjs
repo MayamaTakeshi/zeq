@@ -1,9 +1,10 @@
-// This shows use of fetch without any special zeq features.
-import fetch from 'node-fetch'
+// This shows use of axios without any special zeq features.
+import axios from 'axios'
 import https from 'https'
 import Zeq from '../src/index.js'
 import m from 'data-matching'
 import fs from 'fs'
+import assert from 'assert'
 
 const z = new Zeq()
 
@@ -25,21 +26,30 @@ async function test() {
 
     console.log("server eventNames:", server.eventNames())
 
+    server.eventNames().forEach(event => {
+        console.log("Setting listener for " + event)
+        server.on(event, () => {
+            console.log("server " + event)
+        })
+    })
+
     const httpsAgent = new https.Agent({
         rejectUnauthorized: false,
     })
 
     const url = `https://${server_host}:${server_port}${path}`
 
-    const resp = await fetch(
-        url,
-        {
-            agent: httpsAgent,
-        },
-    )
+    const config = {
+        httpsAgent,
+    }
 
-    const data = await resp.json()
-    console.log(data)
+    process.env.http_proxy = ''
+    process.env.https_proxy = ''
+
+    const res = await axios.get(url, config)
+
+    assert(res.status == 200)
+    assert(res.data.status == 0)
 
     console.log("success")
     process.exit(0)
