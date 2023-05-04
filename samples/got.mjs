@@ -1,5 +1,5 @@
-// This shows use of fetch without any special zeq features.
-import fetch from 'node-fetch'
+// This shows use of got without any special zeq features.
+import got from 'got'
 import https from 'https'
 import Zeq from '../src/index.js'
 import m from 'data-matching'
@@ -26,21 +26,18 @@ async function test() {
 
     console.log("server eventNames:", server.eventNames())
 
-    const httpsAgent = new https.Agent({
-        rejectUnauthorized: false,
-    })
-
     const url = `https://${server_host}:${server_port}${path}`
 
-    const res = await fetch(
+    const res = await got.get(
         url,
         {
-            agent: httpsAgent,
+            https: {
+                rejectUnauthorized: false
+            },
         },
     )
 
-    const data = await res.json()
-    console.log(data)
+    console.log(res.body)
 
     console.log("success")
     process.exit(0)
