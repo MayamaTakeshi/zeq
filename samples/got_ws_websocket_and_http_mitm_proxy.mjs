@@ -22,6 +22,8 @@ async function test() {
 
     const path = '/'
 
+    const token = 'fake_token'
+
     const server_options = {
         key: fs.readFileSync('artifacts/server.key'),
         cert: fs.readFileSync('artifacts/server.crt'),
@@ -36,7 +38,23 @@ async function test() {
     })
     .listen(server_port, server_host)
 
+    server.on('upgrade', function() {
+        console.log("got server upgrade")
+    })
+
+    server.on('tlsClientError', err => {
+        console.log("got server tlsClientError")
+        console.log(err)
+        process.exit(0)
+    })
+
+
     console.log("server eventNames:", server.eventNames())
+    server.eventNames().forEach(name => {
+        server.on(name, (data) => {
+            console.log("got server", name)
+        })
+    })
 
     const proxy = new Proxy()
 
@@ -46,12 +64,37 @@ async function test() {
         return callback()
     })
 
+    proxy.onWebSocketConnection(function(ctx, callback) {
+      console.log('onWebSocketConnection')
+      console.log(Object.keys(ctx))
+      //process.exit(0)
+      ctx.proxyToServerWebSocketOptions.rejectUnauthorized = false
+      console.log('WEBSOCKET CONNECT:', ctx.clientToProxyWebSocket.upgradeReq.url);
+      return callback();
+    });
+
+    proxy.onWebSocketError(function(ctx, err) {
+      console.log('WEBSOCKET ERROR:', ctx.clientToProxyWebSocket.upgradeReq.url, err);
+    });
+
     proxy.onError(function(ctx, err) {
         console.error('proxy error:', err)
     })
 
-    proxy.listen({port: proxy_port}) //, host: proxy_host})
-    console.log(`proxy listening on ${proxy_host}:${proxy_port}`)
+    proxy.listen({port: proxy_port, host: proxy_host}, () => {
+        console.log(`proxy listening on ${proxy_host}:${proxy_port}`)
+        z.push_event({
+            event: 'proxy_ready',
+        })
+    })
+
+    await z.wait([
+        {
+            event: 'proxy_ready',
+        }
+    ], 2000)
+
+    //await z.sleep(60 * 1000)
 
     const wsServer = new websocket.server({
         httpServer: server,
@@ -60,16 +103,49 @@ async function test() {
         // facilities built into the protocol and the browser.  You should
         // *always* verify the connection's origin and decide whether or not
         // to accept it.
-        autoAcceptConnections: false,
+        autoAcceptConnections: true,
     })
 
+    console.log(Object.keys(wsServer))
+    console.log(wsServer._events)
+    console.log("wsServer eventNames:", wsServer.eventNames())
+
+    wsServer.on('upgrade', function() {
+        console.log("wsServer on upgrade")
+        z.push_event({
+            event: 'wss_upgrade',
+        })
+    })
+
+    wsServer.on('upgradeError', function(err) {
+        console.log("wsServer on upgradeError")
+        z.push_event({
+            event: 'wss_upgrade_error',
+        })
+    })
+
+    wsServer.on('connect', function(conn) {
+        console.log("wsServer on connect")
+        z.push_event({
+            event: 'wss_conn',
+            conn,
+        })
+    })
+
+    // the below doesn't happen
+    /*
     wsServer.on('request', function(request) {
+        console.log("wsServer on request")
         const conn = request.accept()
         z.push_event({
             event: 'wss_conn',
             conn,
         })
     })
+    */
+
+    process.env.http_proxy = ''
+    process.env.https_proxy = ''
 
 
     // First we confirm we can talk to the shared https/wss server using plain HTTP
@@ -81,9 +157,18 @@ async function test() {
             https: {
                 rejectUnauthorized: false
             },
-            agent: new HttpsProxyAgent({
-                proxy: `http://${proxy_host}:${proxy_port}`,
-            }),
+            agent: {
+                https: new HttpsProxyAgent({
+                        /*
+                        keepAlive: true,
+                        keepAliveMsecs: 1000,
+                        maxSockets: 256,
+                        maxFreeSockets: 256,
+                        scheduling: 'lifo',
+                        */
+                        proxy: `http://${proxy_host}:${proxy_port}`,
+                }),
+            },
         },
     )
     .json()
@@ -94,6 +179,9 @@ async function test() {
         })
     })
     .catch(err => {
+        console.log('err')
+        console.log(err)
+        process.exit(0)
         z.push_event({
             event: 'https_err',
             err,
@@ -106,11 +194,11 @@ async function test() {
             req: m.collect('req'),
             res: m.collect('server_res')
         },
-    ], 2000) // proxying is slow
+    ], 5000) // proxying is slow
 
     console.log("request arrived")
     z.store.server_res.writeHead(200)
-    z.store.server_res.end('{"status": 0, "token": "fake_token"}')
+    z.store.server_res.end(`{"status": 0, "token": "${token}"}`)
 
     await z.wait([
         {
@@ -121,17 +209,15 @@ async function test() {
 
     assert(z.store.client_res.status == 0)
 
-    const token = z.store.client_res.token
 
-    // Now open a websocket connection
+
+    // Now test websocket connection against the same server
 
     const wsClient = new ws(`wss://${server_host}:${server_port}${path}/ws/`, {
         rejectUnauthorized: false,
-        agent: {
-            https: new HttpsProxyAgent({
-                proxy: `http://${proxy_host}:${proxy_port}`,
-            }),
-        },
+        agent: new HttpsProxyAgent({
+            proxy: `http://${proxy_host}:${proxy_port}`,
+        }),
     })
 
     wsClient.on('open', () => {
@@ -165,19 +251,17 @@ async function test() {
         {
             event: 'wss_open',
         },
+    ], 5000) // proxying is slow
+ 
+    await z.wait([
         {
             event: 'wss_conn',
             conn: m.collect('conn'),
         },
-    ], 1000)
+    ], 5 * 1000) // proxying is slow
+ 
 
-    z.store.conn.on('message', msg => {
-        z.push_event({
-            event: 'wss_msg',
-            source: 'server',
-            msg
-        })
-    })
+    // send message from client to server
 
     const msg = {
         access_token: token,
@@ -189,15 +273,46 @@ async function test() {
 
     wsClient.send(JSON.stringify(msg))
 
+    z.store.conn.on('message', msg => {
+        z.push_event({
+            event: 'wss_msg',
+            source: 'server',
+            msg
+        })
+    })
+
+    z.store.conn.on('close', (reasonCode, description) => {
+         z.push_event({
+            event: 'wss_close',
+            reasonCode,
+            description,
+        })
+    })
+
     await z.wait([
         {
             event: 'wss_msg',
             source: 'server',
-            msg: m.collect('msg'),
+            msg: m.collect('msg_from_client'),
         }
     ], 1000)
 
-    console.log(z.store.msg)
+    console.log(z.store.msg_from_client)
+
+    // send msg from server to client
+    const msg_from_server = {status: 0}
+    z.store.conn.sendUTF(JSON.stringify(msg_from_server))
+
+    await z.wait([
+        {
+            event: 'wss_msg',
+            source: 'client',
+            msg: m.collect('msg_from_server'),
+        },
+    ], 1000)
+
+    console.log(z.store.msg_from_server.toString(), JSON.stringify(msg_from_server))
+    assert(_.isEqual(JSON.parse(z.store.msg_from_server.toString()), msg_from_server))
 
     console.log("success")
     process.exit(0)

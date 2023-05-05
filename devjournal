@@ -170,4 +170,23 @@ Module string_matching was moved to https://github.com/MayamaTakeshi/string-matc
 
 Module matching was moved to https://github.com/MayamaTakeshi/data-matching
 
+================================================
+2023/05/05 takeshi:
+
+Sample curl command to test wss via http proxy:
+
+curl --insecure \
+     -x '127.0.0.1:3128' \
+     --include \
+     --no-buffer \
+     --header "Connection: Upgrade" \
+     --header "Upgrade: websocket" \
+     --header "Host: example.com:80" \
+     --header "Origin: http://example.com:80" \
+     --header "Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw==" \
+     --header "Sec-WebSocket-Version: 13" \
+     --http1.1 \
+     https://127.0.0.1:8888/
+
+This was used while working on got_ws_websocket_and_http_mitm_proxy.mjs.
 
