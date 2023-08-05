@@ -1,6 +1,6 @@
 {
   "name": "@mayama/zeq",
-  "version": "4.1.24",
+  "version": "4.2.0",
   "description": "A JavaScript library to help sequencing commands and event waiting",
   "main": "src/index.js",
   "scripts": {},
@@ -24,7 +24,7 @@
   "homepage": "https://github.com/MayamaTakeshi/zeq#readme",
   "dependencies": {
     "chalk": "^4.0.0",
-    "data-matching": "^1.23.9",
+    "data-matching": "^1.29.0",
     "magic-globals": "github:MayamaTakeshi/magic-globals-MODS",
     "moment": "^2.29.4",
     "set-value": "^4.0.1",
