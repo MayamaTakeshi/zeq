@@ -363,8 +363,6 @@ class Zester {
     }
 
     remove_event_filter(ef) {
-        this.check_op(__func, __caller_line, [ef], ['object'])
-
         var len = this.event_filters.length
 
         this.event_filters = this.event_filters.filter(f => {
