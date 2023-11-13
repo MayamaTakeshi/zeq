@@ -21,16 +21,33 @@ var _isSimpleType = (x) => {
 	}
 }
 
-var _prettyPrintDictElements = (dict, depth, visited) => {
+var _prettyPrintDictElements = (dict, depth, visited, keys_to_print) => {
 	var keys = Object.keys(dict)
-	var printableKeys = _.filter(keys, (key) => !key.startsWith("_"))
-	var items = _.chain(printableKeys).map((key) => { 
-			var val = dict[key]
-			return _i(depth+1) + key + ": " + (_isSimpleType(val) ? util.inspect(val) : _prettyPrint(val, depth+1, true, visited))  
+	keys = _.filter(keys, (key) => !key.startsWith("_"))
+
+	if(keys_to_print) {
+		if(Array.isArray(keys_to_print)) {
+			keys = keys_to_print
+		} else {
+			keys = Object.keys(keys_to_print)
 		}
-	).value()
-	if(items.length != keys.length) {
-		items.push(_i(depth+1) + "... ATTRS WITH NAMES STARTING WITH UNDERSCORE OMITTED ...")
+	}
+
+	var items = _.chain(keys).map((key) => { 
+		var val = dict[key]
+		var ktp = null
+		if(keys_to_print && typeof keys_to_print == 'object') {
+			if(typeof val == 'object') {
+				ktp = keys_to_print[key]
+			}
+		}
+		return _i(depth+1) + key + ": " + (_isSimpleType(val) ? util.inspect(val) : _prettyPrint(val, depth+1, true, visited, ktp))  
+	}).value()
+
+	if(!keys_to_print) {
+		if(items.length != keys.length) {
+			items.push(_i(depth+1) + "... ATTRS WITH NAMES STARTING WITH UNDERSCORE OMITTED ...")
+		}
 	}
 	return items.join(",\n")
 }
@@ -41,7 +58,7 @@ var _prettyPrintArrayElements = (array, depth, visited) => {
 	}),',\n')
 }
 
-var _prettyPrint = (x, depth=0, same_line, visited) => {
+var _prettyPrint = (x, depth=0, same_line, visited, keys_to_print) => {
 	var front_indent = same_line ? '' : _i(depth)
 	if(x === undefined) {
 		return front_indent + 'undefined'
@@ -59,7 +76,7 @@ var _prettyPrint = (x, depth=0, same_line, visited) => {
 			return '[CircularReference]'
 		}
 		visited.push(x)
-		return front_indent + "{\n" + _prettyPrintDictElements(x, depth, visited) + "\n" + _i(depth) + "}"
+		return front_indent + "{\n" + _prettyPrintDictElements(x, depth, visited, keys_to_print) + "\n" + _i(depth) + "}"
 	} else if(typeof x == 'function' && x.__original_data__) {
 		var isArr = Array.isArray(x.__original_data__) 
 		return front_indent + x.__name__ + 
@@ -73,8 +90,12 @@ var _prettyPrint = (x, depth=0, same_line, visited) => {
 	}
 }
 
-var prettyPrint = (x, depth=0, same_line) => {
-	return _prettyPrint(x, depth, same_line, [])
+var prettyPrint = (x, depth=0, same_line, event_shrinkers) => {
+	var keys_to_print = event_shrinkers ? event_shrinkers[x.event] : null
+	if(keys_to_print) {
+		keys_to_print = {event: x.event, ...keys_to_print}
+	}
+	return _prettyPrint(x, depth, same_line, [], keys_to_print)
 }
 
 module.exports = {

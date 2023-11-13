@@ -28,6 +28,15 @@ class Zester {
         this.id = ''
         this.log_function = default_log_function
 
+        this.event_shrinkers = {
+            https_req: {
+                req: ['url', 'method', 'headers'],
+            },
+            https_res: {
+                res: ['status', 'statusText', 'headers', 'data'],
+            }
+        }
+
         if(opts) {
             if(opts.id) {
                 this.id = opts.id
@@ -82,7 +91,7 @@ class Zester {
             var val = dict[key]
             this.print_white("Trying to set " + key)
             if(this.store[key] == null) {
-                this.print_white(zutil.prettyPrint(val, 1))
+                //this.print_white(zutil.prettyPrint(val, 1, null, this.event_shrinkers))
                 this.store[key] = val
             } else {
                 if(this.store[key] != val) {
@@ -96,7 +105,7 @@ class Zester {
     process_event_during_wait(evt) {
         this.print_white("")
         this.print_white(`wait (${this.current_op_line}) got event:`)
-        this.print_white(zutil.prettyPrint(evt, 1))
+        this.print_white(zutil.prettyPrint(evt, 1, null, this.event_shrinkers))
 
         var temp = this.expected_events.slice() // copy array
         var matching_errors = []
@@ -115,7 +124,7 @@ class Zester {
                     this.set_store_vars(this.dict)
                     this.print_white("")
                     this.print_green(`wait (${this.current_op_line}) got expected event:`)
-                    this.print_white(zutil.prettyPrint(evt, 1))
+                    this.print_white(zutil.prettyPrint(evt, 1, null, this.event_shrinkers))
 
                     this.expected_events.splice(i, 1)
                     matched = true
@@ -149,7 +158,7 @@ class Zester {
         } else {
             this.print_red("")
             this.print_red(`wait (${this.current_op_line}) got unexpected event:`)
-            this.print_white(zutil.prettyPrint(evt, 1))
+            this.print_white(zutil.prettyPrint(evt, 1, null, this.event_shrinkers))
             this.print_red("")
             this.print_red('while waiting for expected_events:')
             this.print_white("[")
@@ -169,7 +178,7 @@ class Zester {
 
     process_event_during_sleep(evt) {
         this.print_red(`sleep (${this.current_op_line}) awakened by unexpected event:`)
-        this.print_white(zutil.prettyPrint(evt, 1))
+        this.print_white(zutil.prettyPrint(evt, 1, null, this.event_shrinkers))
         clearTimeout(this.timer_id)
         this.timer_id = null
         this.reject('awakened_by_unexpected_event')
@@ -191,7 +200,7 @@ class Zester {
     handle_event(evt) {
         if(this.should_ignore_event(evt)) {
             this.print_white("Ignoring event:")
-            this.print_white(zutil.prettyPrint(evt, 1))
+            this.print_white(zutil.prettyPrint(evt, 1, null, this.event_shrinkers))
             return
         }
 
