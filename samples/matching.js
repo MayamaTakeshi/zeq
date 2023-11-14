@@ -34,11 +34,11 @@ async function test() {
                 {
                     a: 1,
                     b: "two",
-                    c: m.is_null,
-                    d: m.is_non_zero,
-                    e: m.is_non_blank_str,
-                    f: m.is_str_equal("3"), 
-                    g: m.m('is_greater_than_seven', (e) => {
+                    c: null,
+                    d: m.non_zero,
+                    e: m.non_blank_str,
+                    f: m.str_equal("3"),
+                    g: m.m('greater_than_seven', (e) => {
                         return e > 7;
                     }),
                     h: m.collect('my_var'),
