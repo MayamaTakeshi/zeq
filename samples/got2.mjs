@@ -30,15 +30,20 @@ async function test() {
 
     const url = `https://${server_host}:${server_port}${path}`
 
+    const header_val1 = "abc"
+    const header_val2 = "cba"
+
     got.get(
         url,
         {
             https: {
                 rejectUnauthorized: false
             },
+            headers: {
+                MyCustomHeader: header_val1,
+            },
         },
     )
-    .json()
     .then(res => {
         z.push_event({
             event: 'https_res',
@@ -55,23 +60,38 @@ async function test() {
     await z.wait([
         {
             event: 'https_req',
-            req: m.collect('req'),
+            req: m.collect('req', {
+                url: path,
+                headers: {
+                    mycustomheader: header_val1,
+                },
+            }),
             res: m.collect('server_res')
         },
     ], 1000)
 
+    const response_body = {
+        id: 1234,
+        name: 'ajax'
+    }
+
     console.log("request arrived")
-    z.store.server_res.writeHead(200)
-    z.store.server_res.end('{"status": 0}')
+    z.store.server_res.writeHead(200, { 'Content-Type': 'application/json', MyCustomHeader: header_val2 })
+    z.store.server_res.end(JSON.stringify(response_body))
 
     await z.wait([
         {
             event: 'https_res',
-            res: m.collect('client_res')
+            res: m.collect('res', {
+                statusCode: 200,
+                statusMessage: 'OK',
+                headers: {
+                    mycustomheader: header_val2,
+                },
+                body: m.json(response_body),
+            }),
         },
     ], 1000)
-
-    assert(z.store.client_res.status == 0)
 
     console.log("success")
     process.exit(0)
