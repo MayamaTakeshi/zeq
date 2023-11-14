@@ -24,6 +24,13 @@ function default_log_function(level, msg) {
 }
 
 const default_event_shrinkers = {
+    http_req: {
+        req: ['url', 'method', 'headers', 'data', 'body'],
+        res: [],
+    },
+    http_res: {
+        res: ['status', 'statusText', 'headers', 'data', 'body'],
+    },
     https_req: {
         req: ['url', 'method', 'headers', 'data', 'body'],
         res: [],
