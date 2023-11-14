@@ -33,7 +33,7 @@ var _prettyPrintDictElements = (dict, depth, visited, keys_to_print) => {
 		}
 	}
 
-	var items = _.chain(keys).map((key) => { 
+	var items = _.chain(keys).map((key) => {
 		var val = dict[key]
 		var ktp = null
 		if(keys_to_print && typeof keys_to_print == 'object') {
@@ -41,8 +41,11 @@ var _prettyPrintDictElements = (dict, depth, visited, keys_to_print) => {
 				ktp = keys_to_print[key]
 			}
 		}
-		return _i(depth+1) + key + ": " + (_isSimpleType(val) ? util.inspect(val) : _prettyPrint(val, depth+1, true, visited, ktp))  
-	}).value()
+
+		if(val == undefined) return undefined // do not print undefined values
+
+		return _i(depth+1) + key + ": " + (_isSimpleType(val) ? util.inspect(val) : _prettyPrint(val, depth+1, true, visited, ktp))
+	}).filter(s => { return s }).value()
 
 	if(!keys_to_print) {
 		if(items.length != keys.length) {
@@ -53,7 +56,7 @@ var _prettyPrintDictElements = (dict, depth, visited, keys_to_print) => {
 }
 
 var _prettyPrintArrayElements = (array, depth, visited) => {
-	return _.join(_.map(array, (e) => { 
+	return _.join(_.map(array, (e) => {
 		return _prettyPrint(e, depth+1, false, visited)
 	}),',\n')
 }
@@ -78,9 +81,9 @@ var _prettyPrint = (x, depth=0, same_line, visited, keys_to_print) => {
 		visited.push(x)
 		return front_indent + "{\n" + _prettyPrintDictElements(x, depth, visited, keys_to_print) + "\n" + _i(depth) + "}"
 	} else if(typeof x == 'function' && x.__original_data__) {
-		var isArr = Array.isArray(x.__original_data__) 
-		return front_indent + x.__name__ + 
-			(isArr ? "([\n" : "({\n") + 
+		var isArr = Array.isArray(x.__original_data__)
+		return front_indent + x.__name__ +
+			(isArr ? "([\n" : "({\n") +
 			(isArr ? _prettyPrintArrayElements(x.__original_data__, depth) : _prettyPrintDictElements(x.__original_data__, depth, visited)) + "\n" +
 			_i(depth) + (isArr ? "])" : "})")
 	} else if(typeof x == 'function' && x.__name__) {

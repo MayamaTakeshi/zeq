@@ -23,19 +23,22 @@ function default_log_function(level, msg) {
     console.log(ts() + " " + msg)
 }
 
-class Zester {
+const default_event_shrinkers = {
+    https_req: {
+        req: ['url', 'method', 'headers', 'data', 'body'],
+        res: [],
+    },
+    https_res: {
+        res: ['status', 'statusText', 'headers', 'data', 'body'],
+    },
+}
+
+class Zeq {
     constructor(opts) {
         this.id = ''
         this.log_function = default_log_function
 
-        this.event_shrinkers = {
-            https_req: {
-                req: ['url', 'method', 'headers'],
-            },
-            https_res: {
-                res: ['status', 'statusText', 'headers', 'data'],
-            }
-        }
+        this.event_shrinkers = default_event_shrinkers
 
         if(opts) {
             if(opts.id) {
@@ -63,6 +66,10 @@ class Zester {
         this.resolve = null
         this.reject = null
         this.timer_id = null
+    }
+
+    set_event_shrinkers(es) {
+        this.event_shrinkers = es
     }
 
     print_white(s) {
@@ -188,10 +195,10 @@ class Zester {
         for (var i=0 ; i<this.event_filters.length ; ++i) {
             try {
                 if(this.match(this.event_filters[i][1], evt, i)) {
-                    return true                    
+                    return true
                 }
             } catch(e) {
-                //do nothing    
+                //do nothing
             }
         }
         return false
@@ -250,7 +257,7 @@ class Zester {
             var evt = {
                 source: name,
                 name: event_name,
-                args: args, 
+                args: args,
             }
             if(preprocessor) {
                 evt = preprocessor(evt)
@@ -281,7 +288,7 @@ class Zester {
     }
 
     async wait(events, timeout) {
-        this.check_op('wait', __caller_line, [events, timeout], ['object', 'number']) 
+        this.check_op('wait', __caller_line, [events, timeout], ['object', 'number'])
         var events2 = []
         for(var i=0 ; i<events.length ; i++) {
             var evt = events[i]
@@ -331,7 +338,7 @@ class Zester {
     }
 
     async sleep(timeout) {
-        this.check_op('sleep', __caller_line, [timeout], ['number']) 
+        this.check_op('sleep', __caller_line, [timeout], ['number'])
 
         this.print_green(`sleep (${__caller_line}) started`)
         this.current_op_name = 'sleep'
@@ -385,4 +392,5 @@ class Zester {
     }
 }
 
-module.exports = Zester
+module.exports = Zeq
+exports.default_event_shrinkers = default_event_shrinkers
