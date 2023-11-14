@@ -147,29 +147,14 @@ class Zeq {
             } catch(e) {
                 if(e instanceof matching.MatchingError) {
                     this.print_white(`No match: ${e.path}: ${e.reason}`)
-                    matching_errors[i] = e
                 } else {
-                    this.print_red(e)
-                    clearTimeout(this.timer_id)
-                    this.timer_id = null
-                    this.reject(e)
-                    return
+                    this.print_red(`Error during match attempt ${e}`)
                 }
+                matching_errors[i] = e
             }
         }
 
-        if(matched) {
-            if(this.expected_events.length == 0) {
-                this.print_white("All expected events received")
-                this.print_green(`wait (${this.current_op_line}) finished`)
-
-                this.current_op_name = null
-
-                clearTimeout(this.timer_id)
-                this.timer_id = null
-                this.resolve()
-            }
-        } else {
+		if(matching_errors.length > 0) {
             this.print_red("")
             this.print_red(`wait (${this.current_op_line}) got unexpected event:`)
             this.print_white(zutil.prettyPrint(evt, 1, null, this.event_shrinkers))
@@ -188,6 +173,8 @@ class Zeq {
             this.timer_id = null
             this.reject('got_unexpected_event')
         }
+
+		return matched
     }
 
     process_event_during_sleep(evt) {
@@ -219,12 +206,22 @@ class Zeq {
         }
 
         if(this.current_op_name == 'wait') {
-            this.process_event_during_wait(evt)
+            const matched = this.process_event_during_wait(evt)
+			if(!matched) {
+                clearTimeout(this.timer_id)
+                this.timer_id = null
+                this.reject("not matched")
+				return
+			}
 
             if(this.expected_events.length == 0) {
                 this.print_white("All expected events received")
                 this.print_green(`wait (${this.current_op_line}) finished`)
                 this.current_op_name = null
+
+                clearTimeout(this.timer_id)
+                this.timer_id = null
+                this.resolve()
             }
         } else if(this.current_op_name == 'sleep') {
             this.process_event_during_sleep(evt)
@@ -324,19 +321,33 @@ class Zeq {
 
             while(this.queued_events.length > 0) {
                 var evt = this.queued_events.shift()
-                this.process_event_during_wait(evt)
+                var matched = this.process_event_during_wait(evt)
+				if(!matched) {
+					this.current_op_name = null
+					clearTimeout(this.timer_id)
+					this.timer_id = null
+					this.reject("no match")
+					return
+				}
             }
 
             if(this.expected_events.length == 0) {
                 this.print_white("All expected events received")
                 this.print_green(`wait (${this.current_op_line}) finished`)
+
                 this.current_op_name = null
+				clearTimeout(this.timer_id)
+				this.timer_id = null
                 resolve()
+				return
             }
             this.timer_id = setTimeout(() => {
                 var e = `wait (${this.current_op_line}) timed out`
                 this.print_red(`${e} while waiting for:`)
                 this.print_white(zutil.prettyPrint(this.expected_events))
+
+                this.current_op_name = null
+				clearTimeout(this.timer_id)
                 this.timer_id = null
                 this.reject(e)
             }, timeout)
