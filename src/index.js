@@ -319,6 +319,9 @@ class Zeq {
         this.print_white(zutil.prettyPrint(this.expected_events))
 
         return new Promise((resolve, reject) => {
+            this.resolve = resolve
+            this.reject = reject
+
             while(this.queued_events.length > 0) {
                 var evt = this.queued_events.shift()
                 this.process_event_during_wait(evt)
@@ -330,10 +333,6 @@ class Zeq {
                 this.current_op_name = null
                 resolve()
             }
-
-            this.resolve = resolve
-            this.reject = reject
-
             this.timer_id = setTimeout(() => {
                 var e = `wait (${this.current_op_line}) timed out`
                 this.print_red(`${e} while waiting for:`)
