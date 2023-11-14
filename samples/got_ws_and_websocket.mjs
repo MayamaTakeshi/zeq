@@ -1,7 +1,7 @@
 // This shows use of got/ws/websocket with zeq features.
 import got from 'got'
 import https from 'https'
-import Zeq from '../src/index.js'
+import Zeq, { default_event_shrinkers }  from '../src/index.js'
 import m from 'data-matching'
 import fs from 'fs'
 import assert from 'assert'
@@ -12,6 +12,11 @@ import _ from 'lodash'
 const z = new Zeq()
 
 async function test() {
+    z.set_event_shrinkers({
+        ...default_event_shrinkers,
+        wss_conn: [],
+    })
+
     const server_port = 8888
     const server_host = '0.0.0.0'
     const path = '/'

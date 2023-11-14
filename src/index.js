@@ -154,7 +154,7 @@ class Zeq {
             }
         }
 
-		if(matching_errors.length > 0) {
+		if(!matched) {
             this.print_red("")
             this.print_red(`wait (${this.current_op_line}) got unexpected event:`)
             this.print_white(zutil.prettyPrint(evt, 1, null, this.event_shrinkers))
@@ -169,9 +169,6 @@ class Zeq {
                 this.print_red("  NO_MATCH_REASON: "  + reason + "\n")
             })
             this.print_white("]")
-            clearTimeout(this.timer_id)
-            this.timer_id = null
-            this.reject('got_unexpected_event')
         }
 
 		return matched
@@ -410,4 +407,5 @@ class Zeq {
 }
 
 module.exports = Zeq
+exports = module.exports
 exports.default_event_shrinkers = default_event_shrinkers
