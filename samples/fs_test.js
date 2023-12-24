@@ -8,7 +8,7 @@ const z = new Zeq()
 
 async function test() {
     for(var i=0; i<10; ++i) {
-        var path = "./" + i + ".txt"
+        var path = "./non_existent_file" + i + ".txt"
         console.log(path)
         fs.readFile(path, 'utf8', z.callback_trap('cb'))
 
@@ -17,10 +17,14 @@ async function test() {
                 source: 'callback',
                 name: 'cb',
                 args: [
-                    undefined,
-                    undefined,
+                    {
+                        errno: -2,
+                        code: 'ENOENT',
+                        syscall: 'open',
+                        path: `./non_existent_file${i}.txt`,
+                    }
                 ],
-            }	
+            }
         ], 5000)
     }
 
