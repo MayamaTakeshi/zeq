@@ -125,7 +125,7 @@ var _prettyPrint = (x, depth = 0, same_line, visited, keys_to_print) => {
             x.__name__ +
             (isArr ? "([\n" : "({\n") +
             (isArr
-                ? _prettyPrintArrayElements(x.__original_data__, depth)
+                ? _prettyPrintArrayElements(x.__original_data__, depth, visited)
                 : _prettyPrintDictElements(
                       x.__original_data__,
                       depth,
