@@ -31,19 +31,19 @@ const default_event_shrinkers = {
         res: [],
     },
     http_res: {
-        res: ["status", "statusText", "headers", "data", "body"],
+        res: ["status", "statusText", "statusCode", "statusMessage", "headers", "data", "body"],
     },
     https_req: {
         req: ["url", "method", "headers", "data", "body"],
         res: [],
     },
     https_res: {
-        res: ["status", "statusText", "headers", "data", "body"],
+        res: ["status", "statusText", "statusCode", "statusMessage", "headers", "data", "body"],
     },
     http2_stream: {
         source: ["requestCert", "rejectUnauthorized", "ALPNProtocols"],
-        stream: null,
-        headers: null,
+        stream: null, // show everything
+        headers: null, // show everything
     },
 };
 
