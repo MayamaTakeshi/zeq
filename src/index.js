@@ -40,6 +40,11 @@ const default_event_shrinkers = {
     https_res: {
         res: ["status", "statusText", "headers", "data", "body"],
     },
+    http2_stream: {
+        source: ["requestCert", "rejectUnauthorized", "ALPNProtocols"],
+        stream: null,
+        headers: null,
+    },
 };
 
 class Zeq {
