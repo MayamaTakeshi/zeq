@@ -98,6 +98,10 @@ class Zeq {
         this.log_function("ERROR", chalk.red(this.id + " " + s));
     }
 
+    print(level, s) {
+        this.log_function(level, s);
+    }
+
     match(expected, received, idx) {
         //this.print_white("match got:")
         //console.dir(expected)
@@ -173,17 +177,14 @@ class Zeq {
         }
 
         if (!matched) {
-            this.print_red("");
-            this.print_red("Unexpected event arrived while waiting for:");
-            this.print_white("[");
-            this.expected_events.forEach((e, idx, arr) => {
-                var me = matching_errors[idx];
-                var reason = `${me.path}: ${me.reason}`;
-                reason = reason.replace(/^expected_events\[[0-9]+\]/, "");
-                this.print_white(zutil.prettyPrint(e));
-                this.print_red("  NO_MATCH_REASON: " + reason + "\n");
-            });
-            this.print_white("]");
+            this.print("INFO", chalk.red(this.id + " Unexpected event arrived while waiting for: ") + "[\n" +
+                this.expected_events.map((e, idx, arr) => {
+                    var me = matching_errors[idx];
+                    var reason = `${me.path}: ${me.reason}`;
+                    reason = reason.replace(/^expected_events\[[0-9]+\]/, "");
+                    return zutil.prettyPrint(e, 1) + chalk.red(" NO_MATCH_REASON: " + reason)
+                }).join(",\n") +
+            "\n]")
             this.print_red(
                 `wait (${this.current_op_line}) got unexpected event:`,
             );
