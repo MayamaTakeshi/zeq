@@ -1,10 +1,10 @@
 {
   "name": "@mayama/zeq",
-  "version": "4.15.0",
+  "version": "4.16.0",
   "description": "A JavaScript library to help sequencing commands and event waiting",
   "main": "src/index.js",
   "scripts": {
-    "test": "cd samples; ./runtests"
+    "test": "./runtests"
   },
   "repository": {
     "type": "git",

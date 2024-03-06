@@ -174,14 +174,7 @@ class Zeq {
 
         if (!matched) {
             this.print_red("");
-            this.print_red(
-                `wait (${this.current_op_line}) got unexpected event:`,
-            );
-            this.print_white(
-                zutil.prettyPrint(evt, 1, null, this.event_shrinkers),
-            );
-            this.print_red("");
-            this.print_red("while waiting for expected_events:");
+            this.print_red("Unexpected event arrived while waiting for:");
             this.print_white("[");
             this.expected_events.forEach((e, idx, arr) => {
                 var me = matching_errors[idx];
@@ -191,6 +184,13 @@ class Zeq {
                 this.print_red("  NO_MATCH_REASON: " + reason + "\n");
             });
             this.print_white("]");
+            this.print_red(
+                `wait (${this.current_op_line}) got unexpected event:`,
+            );
+            this.print_white(
+                zutil.prettyPrint(evt, 1, null, this.event_shrinkers),
+            );
+            this.print_red("");
         }
 
         return matched;

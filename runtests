@@ -1,0 +1,45 @@
+#!/bin/bash
+
+set -o nounset
+
+successful_tests=()
+
+function output_successful_tests() {
+    echo "Successful tests:"
+    for t in "${successful_tests[@]}"
+    do
+        echo "  - $t"
+    done
+}
+
+echo
+
+cd samples 
+
+for i in *.{js,mjs}
+do
+    start_time=$(date +%s.%N)
+    node $i
+
+    if [[ $? -ne 0 ]]
+    then
+        echo "$i failed"
+	echo
+	output_successful_tests
+        exit 1
+    else
+        end_time=$(date +%s.%N)
+        duration=$(echo "$end_time - $start_time" | bc)
+	formatted_duration=$(printf "%.2f seconds" $duration)
+	successful_tests+=("$i: duration=$formatted_duration")
+    fi
+done
+
+echo
+
+echo "Success. All tests passed"
+echo
+output_successful_tests
+echo
+echo "Everything OK"
+echo
