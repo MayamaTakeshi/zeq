@@ -8,7 +8,7 @@ class MyEmitter extends events {}
 
 var em = new MyEmitter()
 
-var z = new Zeq()
+var z = new Zeq({quiet: true})
 
 async function test() {
     z.trap_events(em, 'my_emitter')

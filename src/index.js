@@ -59,6 +59,8 @@ class Zeq {
                 this.id = opts.id;
             }
 
+            this.quiet = opts.quiet ? opts.quiet : false;
+
             if (opts.log_function) {
                 this.log_function = opts.log_function;
             }
@@ -103,9 +105,6 @@ class Zeq {
     }
 
     match(expected, received, idx) {
-        //this.print_white("match got:")
-        //console.dir(expected)
-        //console.dir(received)
         return expected(
             received,
             this.dict,
@@ -121,7 +120,6 @@ class Zeq {
             var val = dict[key];
             this.print_white("Trying to set " + key);
             if (this.store[key] == null) {
-                //this.print_white(zutil.prettyPrint(val, 1, null, this.event_shrinkers))
                 this.store[key] = val;
             } else {
                 if (this.store[key] != val) {
@@ -146,12 +144,14 @@ class Zeq {
 
         for (var i = 0; i < temp.length; ++i) {
             try {
-                this.print_white("");
-                this.print_white(`Trying match against expected_events[${i}]:`);
-                this.print_white(zutil.prettyPrint(temp[i], 1));
+                if(!this.quiet) {
+                    this.print_white("");
+                    this.print_white(`Trying match against expected_events[${i}]:`);
+                    this.print_white(zutil.prettyPrint(temp[i], 1));
+                }
 
                 if (this.match(temp[i], evt, i)) {
-                    this.print_white(`Match successful`);
+                    if(!this.quiet) this.print_white(`Match successful`);
 
                     this.set_store_vars(this.dict);
                     this.print_white("");
@@ -167,10 +167,12 @@ class Zeq {
                     break;
                 }
             } catch (e) {
-                if (e instanceof matching.MatchingError) {
-                    this.print_white(`No match: ${e.path}: ${e.reason}`);
-                } else {
-                    this.print_red(`Error during match attempt ${e}`);
+                if(!this.quiet) {
+                    if (e instanceof matching.MatchingError) {
+                        this.print_white(`No match: ${e.path}: ${e.reason}`);
+                    } else {
+                        this.print_red(`Error during match attempt ${e}`);
+                    }
                 }
                 matching_errors[i] = e;
             }
@@ -222,6 +224,7 @@ class Zeq {
 
     handle_event(evt) {
         if (this.should_ignore_event(evt)) {
+            if(this.quiet) return;
             this.print_white("Ignoring event:");
             this.print_white(
                 zutil.prettyPrint(evt, 1, null, this.event_shrinkers),
