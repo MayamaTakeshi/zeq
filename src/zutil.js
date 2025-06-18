@@ -49,7 +49,7 @@ var _prettyPrintDictElements = (dict, depth, visited, keys_to_print) => {
                 }
             }
 
-            if (val == undefined) return undefined; // do not print undefined values
+            if (val === undefined) return undefined; // do not print undefined values
 
             return (
                 _i(depth + 1) +
