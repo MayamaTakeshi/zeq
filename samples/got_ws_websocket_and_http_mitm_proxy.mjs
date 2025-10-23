@@ -197,8 +197,8 @@ async function test() {
     ], 5000) // proxying is slow
 
     console.log("request arrived")
-    z.store.server_res.writeHead(200)
-    z.store.server_res.end(`{"status": 0, "token": "${token}"}`)
+    z.$server_res.writeHead(200)
+    z.$server_res.end(`{"status": 0, "token": "${token}"}`)
 
     await z.wait([
         {
@@ -207,7 +207,7 @@ async function test() {
         },
     ], 1000)
 
-    assert(z.store.client_res.status == 0)
+    assert(z.$client_res.status == 0)
 
 
 
@@ -273,7 +273,7 @@ async function test() {
 
     wsClient.send(JSON.stringify(msg))
 
-    z.store.conn.on('message', msg => {
+    z.$conn.on('message', msg => {
         z.push_event({
             event: 'wss_msg',
             source: 'server',
@@ -281,7 +281,7 @@ async function test() {
         })
     })
 
-    z.store.conn.on('close', (reasonCode, description) => {
+    z.$conn.on('close', (reasonCode, description) => {
          z.push_event({
             event: 'wss_close',
             reasonCode,
@@ -297,11 +297,11 @@ async function test() {
         }
     ], 1000)
 
-    console.log(z.store.msg_from_client)
+    console.log(z.$msg_from_client)
 
     // send msg from server to client
     const msg_from_server = {status: 0}
-    z.store.conn.sendUTF(JSON.stringify(msg_from_server))
+    z.$conn.sendUTF(JSON.stringify(msg_from_server))
 
     await z.wait([
         {
@@ -311,8 +311,8 @@ async function test() {
         },
     ], 1000)
 
-    console.log(z.store.msg_from_server.toString(), JSON.stringify(msg_from_server))
-    assert(_.isEqual(JSON.parse(z.store.msg_from_server.toString()), msg_from_server))
+    console.log(z.$msg_from_server.toString(), JSON.stringify(msg_from_server))
+    assert(_.isEqual(JSON.parse(z.$msg_from_server.toString()), msg_from_server))
 
     console.log("success")
     process.exit(0)

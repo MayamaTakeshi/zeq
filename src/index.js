@@ -82,6 +82,45 @@ class Zeq {
         this.resolve = null;
         this.reject = null;
         this.timer_id = null;
+
+        const handler = {
+            // Intercepts reads (z.$key)
+            get(target, prop) {
+                if (typeof prop === 'string' && prop.startsWith('$')) {
+                    const storeKey = prop.substring(1);
+                    return target.store[storeKey];
+                }
+                // Default behavior for all other properties/methods (z.id, z.print_white, z.store)
+                return target[prop];
+            },
+
+            // Intercepts writes (z.$key = value)
+            set(target, prop, value) {
+                if (typeof prop === 'string' && prop.startsWith('$')) {
+                    const storeKey = prop.substring(1);
+                    target.store[storeKey] = value;
+                    return true; // Indicate success
+                }
+                // Default behavior for all other properties
+                target[prop] = value;
+                return true;
+            },
+
+            // Intercepts deletions (delete z.$key)
+            deleteProperty(target, prop) {
+                if (typeof prop === 'string' && prop.startsWith('$')) {
+                    const storeKey = prop.substring(1);
+                    // Delete the key from the internal store
+                    return delete target.store[storeKey];
+                }
+                // Default behavior for all other properties
+                return delete target[prop];
+            }
+        };
+
+        // --- 3. Return the Proxy object instead of 'this' ---
+        // By returning a value from the constructor, you replace 'this'
+        return new Proxy(this, handler);
     }
 
     set_event_shrinkers(es) {

@@ -76,8 +76,8 @@ async function test() {
     }
 
     console.log("request arrived")
-    z.store.server_res.writeHead(200, { 'Content-Type': 'application/json', MyCustomHeader: header_val2 })
-    z.store.server_res.end(JSON.stringify(response_body))
+    z.$server_res.writeHead(200, { 'Content-Type': 'application/json', MyCustomHeader: header_val2 })
+    z.$server_res.end(JSON.stringify(response_body))
 
     await z.wait([
         {

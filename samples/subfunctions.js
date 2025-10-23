@@ -32,9 +32,9 @@ async function subfunc2(z) {
 }
 
 async function subfunc3(z) {
-    assert(z.store.user_name == 'jlpicard')
-    assert(z.store.host == 'tng.st.org')
-    assert(z.store.port == 5060)
+    assert(z.$user_name == 'jlpicard')
+    assert(z.$host == 'tng.st.org')
+    assert(z.$port == 5060)
 }
 
 async function test() {

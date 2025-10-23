@@ -72,7 +72,7 @@ async function test() {
         }
     ], 1000)
 
-    console.log(z.store.req)
+    console.log(z.$req)
 
     const response_body = {
         id: 100,
@@ -80,8 +80,8 @@ async function test() {
     }
 
     console.log("request arrived")
-    z.store.server_res.writeHead(200, {'Content-Type': 'application/json', MyCustomHeader: header_val2})
-    z.store.server_res.end(JSON.stringify(response_body))
+    z.$server_res.writeHead(200, {'Content-Type': 'application/json', MyCustomHeader: header_val2})
+    z.$server_res.end(JSON.stringify(response_body))
 
     // using fetch we cannot do headers['mycustomheader'] and need to do headers.get('mycustomheader') instead.
     // Also, the body must be obtained by calling 'await res.json()', 'await res.string()' etc and because of this
@@ -101,7 +101,7 @@ async function test() {
         },
     ], 1000)
 
-    const body = await z.store.res.json()
+    const body = await z.$res.json()
 
     assert(m.full_match(body, response_body))
 

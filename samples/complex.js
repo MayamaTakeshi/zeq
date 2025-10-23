@@ -97,10 +97,15 @@ async function test() {
         },
     ], 6000)
 
-    console.log("name=" + z.store.name)
-    assert.equal(z.store.name, 'eeee')
-    console.log("the_CC=" + z.store.the_CC)
-    assert.equal(z.store.the_CC, 3)
+    console.log("name=" + z.$name)
+    assert.equal(z.$name, 'eeee')
+
+    delete z.$name
+    assert.equal(z.$name, undefined)
+
+    console.log("the_CC=" + z.$the_CC)
+    assert.equal(z.$the_CC, 3)
+
 
     await z.sleep(250)
 
