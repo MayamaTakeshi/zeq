@@ -274,6 +274,7 @@ class Zeq {
         if (this.current_op_name == "wait") {
             const matched = this.process_event_during_wait(evt);
             if (!matched) {
+                this.current_op_name = null;
                 clearTimeout(this.timer_id);
                 this.timer_id = null;
                 this.reject("not matched");
