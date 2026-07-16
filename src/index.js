@@ -29,16 +29,20 @@ const default_event_shrinkers = {
     http_req: {
         req: ["url", "method", "headers", "data", "body"],
         res: [],
+        server: null,
     },
     http_res: {
         res: ["status", "statusText", "statusCode", "statusMessage", "headers", "data", "body"],
+        client: null,
     },
     https_req: {
         req: ["url", "method", "headers", "data", "body"],
         res: [],
+        server: null,
     },
     https_res: {
         res: ["status", "statusText", "statusCode", "statusMessage", "headers", "data", "body"],
+        client: null,
     },
     http2_stream: {
         source: ["requestCert", "rejectUnauthorized", "ALPNProtocols"],

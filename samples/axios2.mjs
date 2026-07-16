@@ -21,6 +21,7 @@ async function test() {
     const server = https.createServer(server_options, (req, res) => {
         z.push_event({
             event: 'https_req',
+            server: "myserver",
             req,
             res,
         })
@@ -51,12 +52,14 @@ async function test() {
     .then(res => {
         z.push_event({
             event: 'https_res',
+            client: 'myclient',
             res,
         })
     })
     .catch(err => {
         z.push_event({
             event: 'https_err',
+            client: 'myclient',
             err,
         })
     })
@@ -72,6 +75,7 @@ async function test() {
                 },
             }),
             res: m.collect('server_res'),
+            server: 'myserver',
         },
     ], 1000)
 
@@ -87,6 +91,7 @@ async function test() {
     await z.wait([
         {
             event: 'https_res',
+            client: 'myclient',
             res: {
                 status: 200,
                 headers: {
