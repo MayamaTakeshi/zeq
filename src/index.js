@@ -85,6 +85,7 @@ class Zeq {
 
         this.resolve = null;
         this.reject = null;
+        this.operation_error = null;
         this.timer_id = null;
 
         const handler = {
@@ -249,7 +250,14 @@ class Zeq {
         this.print_white(zutil.prettyPrint(evt, 1, null, this.event_shrinkers));
         clearTimeout(this.timer_id);
         this.timer_id = null;
-        this.reject("awakened_by_unexpected_event");
+        this.reject_operation("awakened_by_unexpected_event");
+    }
+
+    reject_operation(message) {
+        const error = this.operation_error || new Error();
+        error.message = message;
+        this.operation_error = null;
+        this.reject(error);
     }
 
     should_ignore_event(evt) {
@@ -281,7 +289,7 @@ class Zeq {
                 this.current_op_name = null;
                 clearTimeout(this.timer_id);
                 this.timer_id = null;
-                this.reject("not matched");
+                this.reject_operation("not matched");
                 return;
             }
 
@@ -371,6 +379,9 @@ class Zeq {
     }
 
     async wait(events, timeout) {
+        // Capture the stack while wait() is called so failures identify the
+        // await z.wait(...) line in the test, not only zeq's timer callback.
+        this.operation_error = new Error();
         this.check_op(
             "wait",
             __caller_line,
@@ -414,7 +425,7 @@ class Zeq {
                     this.current_op_name = null;
                     clearTimeout(this.timer_id);
                     this.timer_id = null;
-                    this.reject("no match");
+                    this.reject_operation("no match");
                     return;
                 }
             }
@@ -437,12 +448,13 @@ class Zeq {
                 this.current_op_name = null;
                 clearTimeout(this.timer_id);
                 this.timer_id = null;
-                this.reject(e);
+                this.reject_operation(e);
             }, timeout);
         });
     }
 
     async sleep(timeout) {
+        this.operation_error = new Error();
         this.check_op("sleep", __caller_line, [timeout], ["number"]);
 
         this.print_green(`sleep (${__caller_line}) started`);
@@ -464,6 +476,7 @@ class Zeq {
                 this.timer_id = null;
                 this.resolve = null;
                 this.reject = null;
+                this.operation_error = null;
                 resolve();
             }, timeout);
         });
