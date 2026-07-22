@@ -148,10 +148,10 @@ class Zeq {
         this.log_function(level, s);
     }
 
-    match(expected, received, idx) {
+    match(expected, received, idx, dict = this.dict) {
         return expected(
             received,
-            this.dict,
+            dict,
             true,
             "expected_events[" + idx + "]",
         );
@@ -194,9 +194,14 @@ class Zeq {
                     this.print_white(zutil.prettyPrint(temp[i], 1));
                 }
 
-                if (this.match(temp[i], evt, i)) {
+                // Matching may collect values.  Try each alternative with an
+                // isolated dictionary, then commit captures only when the
+                // whole expectation matches.
+                var candidate_dict = {...this.dict};
+                if (this.match(temp[i], evt, i, candidate_dict)) {
                     if(!this.quiet) this.print_white(`Match successful`);
 
+                    this.dict = candidate_dict;
                     this.set_store_vars(this.dict);
                     this.print_white("");
                     this.print_green(
