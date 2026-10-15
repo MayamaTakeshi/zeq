@@ -198,7 +198,8 @@ class Zeq {
                 // isolated dictionary, then commit captures only when the
                 // whole expectation matches.
                 var candidate_dict = {...this.dict};
-                if (this.match(temp[i], evt, i, candidate_dict)) {
+                var match_result = this.match(temp[i], evt, i, candidate_dict);
+                if (match_result) {
                     if(!this.quiet) this.print_white(`Match successful`);
 
                     this.dict = candidate_dict;
@@ -214,6 +215,20 @@ class Zeq {
                     this.expected_events.splice(i, 1);
                     matched = true;
                     break;
+                } else {
+                    // A matcher can return false without throwing (e.g. a raw
+                    // function like `value => value == "..."` instead of
+                    // `m.m('name', value => value == "...")`). Build a
+                    // MatchingError so the "unexpected event" report below
+                    // can show a reason instead of crashing on undefined.
+                    var e = new matching.MatchingError(
+                        "expected_events[" + i + "]",
+                        "matcher returned false without throwing",
+                    );
+                    if(!this.quiet) {
+                        this.print_white(`No match: ${e.path}: ${e.reason}`);
+                    }
+                    matching_errors[i] = e;
                 }
             } catch (e) {
                 if(!this.quiet) {
